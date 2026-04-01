@@ -5,7 +5,7 @@
 - **Curso:** Diseño e Implementación de Sistemas
 - **Entregable:** Parte 1 de 3
 - **Equipo:**
-  - LLusco Blanco Fernando Rene
+  - Llusco Blanco Fernando Rene
   - Rios Nuñez David Samuel
   - Rivera Quisberth David Hugo
   - Terceros Beltrán Oscar Alvaro
