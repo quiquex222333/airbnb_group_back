@@ -452,8 +452,8 @@ flowchart TD
 
 Esta plataforma financiera procesa activos y transacciones de dinero; por lo
 cual, aplicamos un perímetro robusto. Delegaremos la gestión identitaria pura a
-un **Identity Provider (IdP)** externo certificado (como **Auth0** o
-**Keycloak**) instaurando una arquitectura Single Sign-On (SSO).
+un **Identity Provider (IdP)** externo certificado (**Auth0**) instaurando una
+arquitectura Single Sign-On (SSO).
 
 ### 6.1 Flujo de Autenticación (AuthN): OIDC con Authorization Code Flow
 
