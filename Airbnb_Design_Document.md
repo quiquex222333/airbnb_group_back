@@ -517,7 +517,14 @@ sequenceDiagram
   a la API.
 - **Access Token:** Emitido bajo el formato `JWT` cifrado y procesable.
   Empaqueta atributos como el `sub` (el UUID oficial del usuario), su `exp`
-  (expiración) y los `scopes` permitidos.
+  (expiración corta, usualmente 20 minutos para minimizar riesgos) y los
+  `scopes` permitidos.
+- **Refresh Token (Estrategia de Renovación):** Para mantener la sesión del
+  usuario activa de manera ininterrumpida, el cliente utiliza este token de
+  larga duración para solicitar silenciosamente un nuevo _Access Token_ al IdP
+  (Auth0) en el _background_ instantes antes de que el actual expire. Para
+  prevenir sustracciones, se aplicará "Rotación de Refresh Tokens" (cada uso
+  invalida el token anterior y emite uno nuevo).
 
 ### 6.2 Modelo de Autorización (AuthZ): RBAC y Verificación
 
