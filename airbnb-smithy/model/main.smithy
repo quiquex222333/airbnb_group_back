@@ -3,6 +3,8 @@ $version: "2"
 namespace com.airbnb.api
 
 use aws.protocols#restJson1
+use airbnb-smithy.model.headers.http-headers#TraceHeaders
+use airbnb-smithy.model.headers.http-headers#JsonHeaders
 
 @title("Airbnb Backend Core API")
 @restJson1
@@ -41,6 +43,16 @@ operation ListListings {
 
 @input
 structure ListListingsInput {
+    // Headers
+    @httpHeader("X-Request-Id")
+    requestId: String
+
+    @httpHeader("X-Correlation-Id")
+    correlationId: String
+
+    @httpHeader("Accept")
+    accept: String
+
     @httpQuery("lat")
     lat: Double,
 
@@ -87,6 +99,17 @@ operation GetListing {
 
 @input
 structure GetListingInput {
+    // Headers
+    @httpHeader("X-Request-Id")
+    requestId: String
+
+    @httpHeader("X-Correlation-Id")
+    correlationId: String
+
+    @httpHeader("Accept")
+    accept: String
+
+    //Path
     @required
     @httpLabel
     listingId: String
@@ -130,6 +153,20 @@ operation CreateListing {
 
 @input
 structure CreateListingInput {
+    // Headers
+    @httpHeader("X-Request-Id")
+    requestId: String
+
+    @httpHeader("X-Correlation-Id")
+    correlationId: String
+
+    @httpHeader("Content-Type")
+    contentType: String
+
+    @httpHeader("Accept")
+    accept: String
+
+    // Body
     @required
     @length(min: 10, max: 100)
     title: String,
@@ -165,6 +202,20 @@ operation CreateBooking {
 
 @input
 structure CreateBookingInput {
+    // Headers
+    @httpHeader("X-Request-Id")
+    requestId: String
+
+    @httpHeader("X-Correlation-Id")
+    correlationId: String
+
+    @httpHeader("Content-Type")
+    contentType: String
+
+    @httpHeader("Accept")
+    accept: String
+
+    // Body
     @required
     listingId: String,
 
@@ -210,6 +261,17 @@ operation GetBooking {
 
 @input
 structure GetBookingInput {
+    // Headers
+    @httpHeader("X-Request-Id")
+    requestId: String
+
+    @httpHeader("X-Correlation-Id")
+    correlationId: String
+
+    @httpHeader("Accept")
+    accept: String
+
+    // Path
     @required
     @httpLabel
     bookingId: String
@@ -232,6 +294,20 @@ operation CreateReview {
 
 @input
 structure CreateReviewInput {
+    // Headers
+    @httpHeader("X-Request-Id")
+    requestId: String
+
+    @httpHeader("X-Correlation-Id")
+    correlationId: String
+
+    @httpHeader("Content-Type")
+    contentType: String
+
+    @httpHeader("Accept")
+    accept: String
+
+    // Path + Body
     @required
     @httpLabel
     bookingId: String,
