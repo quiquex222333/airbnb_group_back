@@ -25,11 +25,3 @@ structure JsonHeaders {
     @documentation("Expected media type of the response. Use application/json.")
     accept: String
 }
-
-@documentation("Authorization header required by protected endpoints.")
-structure AuthHeader {
-    @required
-    @httpHeader("Authorization")
-    @documentation("Bearer token used to authenticate the caller in protected endpoints.")
-    authorization: String
-}
