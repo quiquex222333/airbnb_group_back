@@ -3,10 +3,16 @@ $version: "2"
 namespace com.airbnb.api
 
 use aws.protocols#restJson1
-use airbnb-smithy.model.headers.http-headers#TraceHeaders
-use airbnb-smithy.model.headers.http-headers#JsonHeaders
+use airbnbclone.common.headers#TraceHeaders
+use airbnbclone.common.headers#JsonHeaders
 
 @title("Airbnb Backend Core API")
+@documentation("""
+    HTTP API versionado por URL: todas las operaciones REST usan el prefijo de ruta `/v1`.
+    Cambios incompatibles del contrato requieren una nueva versión en la URL (p. ej. `/v2`);
+    cambios compatibles permanecen bajo `/v1`. Los eventos asíncronos deben declarar su
+    versión de esquema en metadatos cuando aplique.
+    """)
 @restJson1
 @httpBearerAuth
 service AirbnbService {
@@ -42,17 +48,7 @@ operation ListListings {
 }
 
 @input
-structure ListListingsInput {
-    // Headers
-    @httpHeader("X-Request-Id")
-    requestId: String
-
-    @httpHeader("X-Correlation-Id")
-    correlationId: String
-
-    @httpHeader("Accept")
-    accept: String
-
+structure ListListingsInput with [TraceHeaders, JsonHeaders] {
     @httpQuery("lat")
     lat: Double,
 
@@ -98,17 +94,7 @@ operation GetListing {
 }
 
 @input
-structure GetListingInput {
-    // Headers
-    @httpHeader("X-Request-Id")
-    requestId: String
-
-    @httpHeader("X-Correlation-Id")
-    correlationId: String
-
-    @httpHeader("Accept")
-    accept: String
-
+structure GetListingInput with [TraceHeaders, JsonHeaders] {
     //Path
     @required
     @httpLabel
@@ -152,20 +138,7 @@ operation CreateListing {
 }
 
 @input
-structure CreateListingInput {
-    // Headers
-    @httpHeader("X-Request-Id")
-    requestId: String
-
-    @httpHeader("X-Correlation-Id")
-    correlationId: String
-
-    @httpHeader("Content-Type")
-    contentType: String
-
-    @httpHeader("Accept")
-    accept: String
-
+structure CreateListingInput with [TraceHeaders, JsonHeaders] {
     // Body
     @required
     @length(min: 10, max: 100)
@@ -201,20 +174,7 @@ operation CreateBooking {
 }
 
 @input
-structure CreateBookingInput {
-    // Headers
-    @httpHeader("X-Request-Id")
-    requestId: String
-
-    @httpHeader("X-Correlation-Id")
-    correlationId: String
-
-    @httpHeader("Content-Type")
-    contentType: String
-
-    @httpHeader("Accept")
-    accept: String
-
+structure CreateBookingInput with [TraceHeaders, JsonHeaders] {
     // Body
     @required
     listingId: String,
@@ -260,17 +220,7 @@ operation GetBooking {
 }
 
 @input
-structure GetBookingInput {
-    // Headers
-    @httpHeader("X-Request-Id")
-    requestId: String
-
-    @httpHeader("X-Correlation-Id")
-    correlationId: String
-
-    @httpHeader("Accept")
-    accept: String
-
+structure GetBookingInput with [TraceHeaders, JsonHeaders] {
     // Path
     @required
     @httpLabel
@@ -293,20 +243,7 @@ operation CreateReview {
 }
 
 @input
-structure CreateReviewInput {
-    // Headers
-    @httpHeader("X-Request-Id")
-    requestId: String
-
-    @httpHeader("X-Correlation-Id")
-    correlationId: String
-
-    @httpHeader("Content-Type")
-    contentType: String
-
-    @httpHeader("Accept")
-    accept: String
-
+structure CreateReviewInput with [TraceHeaders, JsonHeaders] {
     // Path + Body
     @required
     @httpLabel

@@ -3,6 +3,7 @@ $version: "2"
 namespace airbnbclone.common.headers
 
 @documentation("Headers used for distributed tracing and request tracking.")
+@mixin
 structure TraceHeaders {
     @required
     @httpHeader("X-Request-Id")
@@ -16,6 +17,7 @@ structure TraceHeaders {
 }
 
 @documentation("Headers used for JSON content negotiation.")
+@mixin
 structure JsonHeaders {
     @httpHeader("Content-Type")
     @documentation("Media type of the request body. Use application/json for requests with body.")
