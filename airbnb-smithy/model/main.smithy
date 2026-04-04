@@ -18,7 +18,7 @@ use airbnbclone.common.headers#JsonHeaders
 service AirbnbService {
     version: "2026-03-30",
     resources: [Listing, Booking],
-    operations: [Register, Login],
+    operations: [Register, Login, GetCurrentUser],
     errors: [
         BadRequestError,
         UnauthorizedError,
@@ -31,6 +31,9 @@ service AirbnbService {
         InvalidCredentialsError,
         UserDisabledError,
         AuthUserNotFoundError,
+        AuthUnauthorizedError,
+        TokenExpiredError,
+        TokenInvalidError,
         InternalServerError
     ]
 }
@@ -146,6 +149,23 @@ structure LoginOutput {
     @required
     user: AuthenticatedUser
 }
+
+/// Perfil mínimo del usuario autenticado (`Authorization: Bearer` obligatorio).
+@readonly
+@http(method: "GET", uri: "/v1/auth/me", code: 200)
+operation GetCurrentUser {
+    input: GetCurrentUserInput,
+    output: AuthenticatedUser,
+    errors: [
+        AuthUnauthorizedError,
+        TokenExpiredError,
+        TokenInvalidError,
+        InternalServerError
+    ]
+}
+
+@input
+structure GetCurrentUserInput with [TraceHeaders, JsonHeaders] {}
 
 // ---------------------------------------------------------
 //  Listings (Resource & Operations)
@@ -493,6 +513,30 @@ structure UserDisabledError {
 @error("client")
 @httpError(401)
 structure InvalidCredentialsError {
+    @required
+    error: AuthErrorBody
+}
+
+/// Falta token o no está autorizado (`UNAUTHORIZED`).
+@error("client")
+@httpError(401)
+structure AuthUnauthorizedError {
+    @required
+    error: AuthErrorBody
+}
+
+/// Token de acceso expirado (`TOKEN_EXPIRED`).
+@error("client")
+@httpError(401)
+structure TokenExpiredError {
+    @required
+    error: AuthErrorBody
+}
+
+/// Token mal formado, firma inválida o emitido por otro emisor (`TOKEN_INVALID`).
+@error("client")
+@httpError(401)
+structure TokenInvalidError {
     @required
     error: AuthErrorBody
 }
