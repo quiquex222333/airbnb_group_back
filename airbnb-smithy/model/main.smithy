@@ -18,7 +18,7 @@ use airbnbclone.common.headers#JsonHeaders
 service AirbnbService {
     version: "2026-03-30",
     resources: [Listing, Booking],
-    operations: [Register, Login, GetCurrentUser, UpdateListingStatus],
+    operations: [Register, Login, GetCurrentUser, UpdateListingStatus, UpdateBookingStatus],
     errors: [
         BadRequestError,
         UnauthorizedError,
@@ -75,6 +75,8 @@ structure RegisterInput with [TraceHeaders, JsonHeaders] {
     name: String,
 
     @required
+    @Length(min: 5, max: 250)
+    @pattern("^[^@\\s]+@[^@\\s]+\.[^@\\s]+$")
     email: String,
 
     /// Mín. 8 caracteres, mayúscula, minúscula, dígito y carácter especial.
@@ -205,16 +207,15 @@ list StringList {
     member: String
 }
 
-/// Dirección postal mínima requerida al crear un listing.
-structure ListingAddress {
+/// Ubicación del alojamiento (`Point` lat/lon), alineado al diccionario de entidades Listing.
+structure ListingLocation {
     @required
-    country: String,
+    @range(min: -90, max: 90)
+    lat: Double,
 
     @required
-    city: String,
-
-    @required
-    street: String
+    @range(min: -180, max: 180)
+    lon: Double
 }
 
 /// Detalle completo de un listing (lectura según visibilidad draft/publicado).
@@ -242,13 +243,13 @@ structure ListingDetail {
 
     @required
     @range(min: 1)
-    capacity: Integer,
+    maxGuests: Integer,
 
     @required
     status: ListingLifecycleStatus,
 
     @required
-    address: ListingAddress,
+    location: ListingLocation,
 
     @required
     amenities: StringList,
@@ -362,10 +363,10 @@ structure CreateListingInput with [TraceHeaders, JsonHeaders] {
 
     @required
     @range(min: 1)
-    capacity: Integer,
+    maxGuests: Integer,
 
     @required
-    address: ListingAddress,
+    location: ListingLocation,
 
     @required
     amenities: StringList,
@@ -374,14 +375,9 @@ structure CreateListingInput with [TraceHeaders, JsonHeaders] {
     images: StringList
 }
 
+/// Listing completo: mismos atributos que el body de creación más `status` y `createdAt` generados en servidor.
 @output
-structure CreateListingOutput {
-    @required
-    id: String,
-
-    @required
-    status: ListingLifecycleStatus,
-
+structure CreateListingOutput with [ListingDetail] {
     /// Fecha de creación en ISO 8601 (UTC), p. ej. `2026-03-29T19:00:00Z`.
     @required
     createdAt: String
@@ -432,6 +428,7 @@ resource Booking {
     identifiers: { bookingId: String },
     read: GetBooking,
     create: CreateBooking,
+    update: UpdateBookingStatus,
     resources: [Review]
 }
 
@@ -493,6 +490,29 @@ structure GetBookingInput with [TraceHeaders, JsonHeaders] {
     @required
     @httpLabel
     bookingId: String
+}
+
+/// Actualiza el estado de la reserva (p. ej. transición a `CANCELED`). Reglas de transición en servidor.
+@http(method: "PATCH", uri: "/v1/bookings/{bookingId}/status", code: 200)
+operation UpdateBookingStatus {
+    input: UpdateBookingStatusInput,
+    output: GetBookingOutput,
+    errors: [
+        NotFoundError,
+        ForbiddenError,
+        InvalidStatusTransitionError,
+        InternalServerError
+    ]
+}
+
+@input
+structure UpdateBookingStatusInput with [TraceHeaders, JsonHeaders] {
+    @required
+    @httpLabel
+    bookingId: String,
+
+    @required
+    status: BookingStatus
 }
 
 // ---------------------------------------------------------
