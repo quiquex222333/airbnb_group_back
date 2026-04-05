@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { UserPlus, Mail, Lock, MapPin, User, Loader2 } from 'lucide-react';
+import { UserPlus, Mail, Lock, MapPin, User, Loader2, Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '../features/auth/api';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterScreen = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'guest' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'guest' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmCode, setConfirmCode] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,8 +17,16 @@ const RegisterScreen = () => {
     e.preventDefault();
     setIsLoading(true);
     setMsg({ text: '', type: '' });
+    
+    if (formData.password !== formData.confirmPassword) {
+      setMsg({ text: 'Las contraseñas no coinciden', type: 'error' });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await apiClient.post('/auth/register', formData);
+      const { confirmPassword, ...registerData } = formData;
+      await apiClient.post('/auth/register', registerData);
       setMsg({ text: '¡Código de verificación enviado a tu correo!', type: 'success' });
       setIsConfirming(true);
     } catch (err: any) {
@@ -88,7 +98,7 @@ const RegisterScreen = () => {
               <input 
                 type="text" required placeholder="Tu Nombre Completo"
                 value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
             </div>
             <div className="relative">
@@ -96,16 +106,38 @@ const RegisterScreen = () => {
               <input 
                 type="email" required placeholder="tu@correo.com"
                 value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input 
-                type="password" required placeholder="Contraseña segura (Mayúscula, minúscula, símbolos)"
+                type={showPassword ? "text" : "password"} required placeholder="Contraseña segura (Min. 8 chars, 1 mayúsucla, 1 símbolo)"
                 value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+              <input 
+                type={showConfirmPassword ? "text" : "password"} required placeholder="Verificiar tu contraseña"
+                value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 bg-white/70 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
           </div>
 

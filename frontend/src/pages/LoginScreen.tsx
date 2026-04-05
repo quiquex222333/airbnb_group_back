@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, LogIn, PlaneTakeoff, Loader2 } from 'lucide-react';
+import { Mail, Lock, LogIn, PlaneTakeoff, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../features/auth/api';
 import { useAuthStore } from '../features/auth/store';
@@ -8,6 +8,7 @@ const LoginScreen = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const setCredentials = useAuthStore(state => state.setCredentials);
@@ -65,7 +66,7 @@ const LoginScreen = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/60 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/60 focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all shadow-sm outline-none"
                 placeholder="tu@correo.com"
               />
             </div>
@@ -74,15 +75,22 @@ const LoginScreen = () => {
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700 ml-1">Contraseña</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white/60 focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm outline-none"
+                className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 bg-white/60 focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all shadow-sm outline-none"
                 placeholder="••••••••"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
           </div>
 
