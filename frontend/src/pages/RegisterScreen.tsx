@@ -55,7 +55,7 @@ const RegisterScreen = () => {
     <div className="min-h-screen relative flex items-center justify-center p-4">
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-1000"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1521483864085-f55e39d5dc01?q=80&w=2070&auto=format&fit=crop')" }}
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=2070&auto=format&fit=crop')" }}
       >
         <div className="absolute inset-0 bg-black/50" />
       </div>
