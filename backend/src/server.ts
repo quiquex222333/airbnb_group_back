@@ -25,5 +25,5 @@ app.get('/health', (req, res) => {
 // Run server
 app.listen(env.PORT, () => {
   console.log(`🚀 API BFF Server running smoothly on port ${env.PORT}`);
-  console.log(`🔐 AWS Cognito linked to Pool: ${env.COGNITO_USER_POOL_ID}`);
+  console.log(`🔐 AWS Cognito linked to Pool`);
 });

@@ -123,3 +123,6 @@ dist
 # IDE files
 .idea/
 .vscode/
+
+# Variables de entorno
+.env
