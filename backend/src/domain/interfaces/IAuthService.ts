@@ -3,6 +3,7 @@ import { Session, RefreshSessionResult } from '../entities/Session';
 
 export interface IAuthService {
   register(name: string, email: string, password: string, role: UserRole): Promise<User>;
+  confirmRegistration(email: string, code: string): Promise<void>;
   login(email: string, password: string): Promise<Session>;
   refreshSession(refreshToken: string): Promise<RefreshSessionResult>;
   logout(accessToken: string): Promise<void>;

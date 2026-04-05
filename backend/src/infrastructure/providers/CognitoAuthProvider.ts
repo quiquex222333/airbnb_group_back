@@ -1,6 +1,7 @@
-import { 
+import {
   CognitoIdentityProviderClient, 
   SignUpCommand, 
+  ConfirmSignUpCommand,
   InitiateAuthCommand, 
   GlobalSignOutCommand,
   GetUserCommand
@@ -41,6 +42,22 @@ export class CognitoAuthProvider implements IAuthService {
     } catch (error: any) {
       if (error.name === 'UsernameExistsException') throw new Error('EMAIL_ALREADY_EXISTS');
       if (error.name === 'InvalidPasswordException') throw new Error('INVALID_PASSWORD_POLICY');
+      throw error;
+    }
+  }
+
+  async confirmRegistration(email: string, code: string): Promise<void> {
+    const command = new ConfirmSignUpCommand({
+      ClientId: env.COGNITO_CLIENT_ID,
+      Username: email,
+      ConfirmationCode: code,
+    });
+
+    try {
+      await this.client.send(command);
+    } catch (error: any) {
+      if (error.name === 'CodeMismatchException') throw new Error('INVALID_CODE');
+      if (error.name === 'ExpiredCodeException') throw new Error('EXPIRED_CODE');
       throw error;
     }
   }
