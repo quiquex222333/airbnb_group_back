@@ -12,8 +12,8 @@
   - Torrez Azuga Marcelo
 
 - **Sistema Elegido:** Airbnb
-- **Fecha de Entrega:** [Por confirmar]
-- **Evaluador:** [Por confirmar]
+- **Fecha de Entrega:** 05/04/2026
+- **Evaluador:** Ph.D. Jheser Guzman
 
 ---
 
@@ -39,9 +39,9 @@
 Este documento describe el diseño técnico de alto nivel del sistema de backend
 para Airbnb, una plataforma global que conecta a anfitriones que ofrecen
 alojamiento temporal con huéspedes que buscan estancias. El sistema permite
-gestionar los inventarios (alojamientos) a gran escala, realizar búsquedas
-rápidas mediante filtros precisos, administrar el flujo transaccional seguro de
-pagos/reservas y gestionar un modelo de reputación a través de reseñas.
+gestionar los alojamientos a gran escala, realizar búsquedas rápidas mediante
+filtros precisos, administrar el flujo transaccional seguro de pagos/reservas y
+gestionar un modelo de reputación a través de reseñas.
 
 ## Supuestos
 
@@ -580,3 +580,68 @@ Las integraciones y validaciones dentro del modelo abarcan:
 3. Estructura de errores centralizada (Ej. `ConflictError 409` mapeando las
    transacciones fallidas de base de datos) permitiendo auto-generación limpia
    de SDks y Swagger OpenApi (vía `smithy-build.json`).
+
+---
+
+## Resumen de Calificación — Parte 1
+
+| Sección                     | Criterio                                     | Puntos Obtenidos | Puntos Posibles |
+| --------------------------- | -------------------------------------------- | ---------------- | --------------- |
+| **A — Documento de Diseño** | A1 · Requisitos Funcionales                  |                  | 2               |
+|                             | A2 · Requisitos No Funcionales               |                  | 2               |
+|                             | A3 · Entidades Principales y Modelo de Datos |                  | 2               |
+|                             | A4 · Diseño de Alto Nivel y Diagramas        |                  | 2               |
+| **B — AuthZ/AuthN**         | B1 · Flujo de Autenticación (OIDC)           |                  | 2               |
+|                             | B2 · Modelo de Autorización (AuthZ)          |                  | 2               |
+|                             | B3 · Integración SSO y Seguridad de Tokens   |                  | 2               |
+| **C — Smithy REST API**     | C1 · Correctitud y Completitud del Modelo    |                  | 2               |
+|                             | C2 · Diseño de Recursos REST                 |                  | 2               |
+|                             | C3 · Seguridad y Manejo de Errores           |                  | 2               |
+|                             | **TOTAL PARTE 1**                            |                  | **20**          |
+
+**Nota Parte 1:** _____ / 20 &nbsp;&nbsp;&nbsp; **Porcentaje:** _____%
+
+---
+
+## Lista de Verificación Rápida para el Evaluador
+
+Antes de asignar puntaje, confirme:
+
+- [ ] El equipo usó la plantilla del curso (no una plantilla propia o descargada
+      de internet)
+- [ ] El sistema elegido es lo suficientemente complejo para requerir las 3
+      partes del proyecto
+- [ ] El modelo Smithy y el documento de diseño describen el **mismo** sistema
+      (coherencia entre entregables)
+- [ ] Los diagramas de AuthN y AuthZ son específicos al sistema (no
+      genéricos/copiados)
+- [ ] `smithy build` fue ejecutado y genera código sin errores (verifique en el
+      repositorio o en vivo)
+- [ ] No hay secretos, passwords ni API keys en el repositorio
+
+---
+
+## Retroalimentación General
+
+**Fortalezas del equipo:**
+
+&nbsp;
+
+&nbsp;
+
+**Áreas de mejora para la Parte 2:**
+
+&nbsp;
+
+&nbsp;
+
+**Recomendaciones específicas:**
+
+&nbsp;
+
+&nbsp;
+
+---
+
+_Rúbrica — Parte 1 · Diseño de Sistema + AuthZ/AuthN + Smithy · Ciclo {{ CICLO
+}}_
