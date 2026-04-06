@@ -7,7 +7,7 @@
 - **Equipo:**
   - Llusco Blanco Fernando Rene
   - Rios Nuñez David Samuel
-  - Rivera Quisberth David Hugo
+  - Rivera Quisberth Juan Enrique
   - Terceros Beltrán Oscar Alvaro
   - Torrez Azuga Marcelo
 
