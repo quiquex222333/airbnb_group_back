@@ -1,5 +1,12 @@
 import { createUser } from "./handler";
 
+function asHttpResult(result: any) {
+  return result as {
+    statusCode: number;
+    body: string;
+  };
+}
+
 jest.mock("@aws-sdk/lib-dynamodb", () => {
   return {
     DynamoDBDocumentClient: {
@@ -17,33 +24,33 @@ describe("User Service - createUser", () => {
   });
 
   it("should return 400 when fullName is missing", async () => {
-    const result = await createUser({
+    const result = asHttpResult(await createUser({
       body: JSON.stringify({
         email: "test@email.com"
       })
-    } as any);
+    } as any));
 
     expect(result.statusCode).toBe(400);
   });
 
   it("should return 400 when email is invalid", async () => {
-    const result = await createUser({
+    const result = asHttpResult(await createUser({
       body: JSON.stringify({
         fullName: "Juan Perez",
         email: "invalid-email"
       })
-    } as any);
+    } as any));
 
     expect(result.statusCode).toBe(400);
   });
 
   it("should return 201 when user is valid", async () => {
-    const result = await createUser({
+    const result = asHttpResult(await createUser({
       body: JSON.stringify({
         fullName: "Juan Perez",
         email: "juan@test.com"
       })
-    } as any);
+    } as any));
 
     expect(result.statusCode).toBe(201);
 

@@ -1,3 +1,4 @@
+import { CreateUserInput, CreateUserOutput } from "@airbnb-clone/contracts";
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
@@ -19,7 +20,9 @@ export async function createUser(
       });
     }
 
-    const body = event.body ? JSON.parse(event.body) : {};
+    const body: CreateUserInput = event.body
+      ? JSON.parse(event.body)
+      : ({} as CreateUserInput);
 
     const fullName = String(body.fullName ?? "").trim();
     const email = String(body.email ?? "").trim().toLowerCase();
@@ -59,7 +62,11 @@ export async function createUser(
       })
     );
 
-    return response(201, { user });
+    const output: CreateUserOutput = {
+      user
+    };
+
+    return response(201, output);
   } catch (error: any) {
     if (error?.name === "ConditionalCheckFailedException") {
       return response(409, {
