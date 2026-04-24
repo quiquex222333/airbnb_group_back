@@ -1,272 +1,85 @@
 # Airbnb Microservices Clone
 
-Proyecto académico de microservicios inspirado en Airbnb, construido con enfoque **contract-first** y buenas prácticas para una demo avanzada en AWS.
+## Descripción
+Proyecto académico de microservicios inspirado en Airbnb usando AWS (Free Tier), CDK, TypeScript y Smithy.
 
-## Tecnologías principales
+## Arquitectura actual
 
-- TypeScript
-- Smithy
+Client → API Gateway → Lambda (User Service) → DynamoDB  
+                    ↘ Cognito (Auth)
+
+## Tecnologías
 - AWS CDK
-- AWS Lambda
+- Lambda
 - API Gateway
 - DynamoDB
-- CloudWatch Logs
+- Cognito
+- TypeScript
+- Jest
+
+## Requisitos
+
 - Node.js 20+
+- AWS CLI configurado
+- CDK instalado
 
-## Objetivo del proyecto
-
-Construir una arquitectura de microservicios tipo Airbnb, aplicando patrones modernos como:
-
-- Contratos API con Smithy.
-- Infraestructura como código con AWS CDK.
-- Servicios serverless con Lambda.
-- Persistencia independiente por servicio.
-- Comunicación futura por eventos.
-- Buenas prácticas de despliegue y documentación.
-
-## Arquitectura inicial implementada
-
-Primer hito implementado: **User Service**.
-
-```txt
-Client
-  ↓
-API Gateway
-  ↓
-User Service Lambda
-  ↓
-DynamoDB UsersTable
-```
-
-## Estructura del proyecto
-
-```txt
-airbnb-microservices/
-├── contracts/
-│   └── smithy/
-│       ├── models/
-│       │   └── user.smithy
-│       └── smithy-build.json
-├── generated/
-│   └── typescript/
-│       └── user-client/
-├── services/
-│   ├── user-service/
-│   │   ├── src/
-│   │   │   └── handler.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── listing-service/
-│   ├── booking-service/
-│   ├── review-service/
-│   └── notification-service/
-├── infrastructure/
-│   └── cdk/
-│       ├── bin/
-│       ├── lib/
-│       │   └── cdk-stack.ts
-│       ├── package.json
-│       └── tsconfig.json
-├── shared/
-├── docs/
-└── README.md
-```
-
-## Requisitos previos
-
-Antes de ejecutar el proyecto, se debe tener instalado:
-
-- Node.js 20 o superior.
-- npm.
-- AWS CLI.
-- AWS CDK.
-- Smithy CLI.
-- Cuenta AWS configurada.
-
-Validar instalaciones:
-
-```bash
-node -v
-npm -v
-aws --version
-cdk --version
-smithy --version
-```
-
-Configurar credenciales de AWS:
-
-```bash
-aws configure
-```
-
-## Instalación general
-
-Desde la raíz del proyecto:
+## Instalación
 
 ```bash
 npm install
 ```
 
-## Configuración del monorepo
-
-El proyecto usa npm workspaces.
-
-El `package.json` raíz debe incluir:
-
-```json
-{
-  "name": "airbnb-microservices",
-  "version": "1.0.0",
-  "private": true,
-  "workspaces": [
-    "services/*",
-    "shared/*",
-    "infrastructure/cdk"
-  ],
-  "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
-  }
-}
-```
-
-## Contrato Smithy
-
-El contrato del servicio de usuarios se encuentra en:
-
-```txt
-contracts/smithy/models/user.smithy
-```
-
-El contrato define:
-
-- `UserService`
-- Operación `CreateUser`
-- Entrada `CreateUserInput`
-- Salida `CreateUserOutput`
-- Errores `ValidationError` y `ConflictError`
-
-## Generar código desde Smithy
-
-Desde la raíz del proyecto:
+## Build
 
 ```bash
-cd contracts/smithy
-smithy build
-cd ../..
-```
-
-Copiar cliente generado:
-
-```bash
-rm -rf generated/typescript/user-client
-mkdir -p generated/typescript/user-client
-
-cp -R contracts/smithy/build/smithy/source/typescript-client-codegen/* generated/typescript/user-client/
-```
-
-Compilar cliente generado:
-
-```bash
-cd generated/typescript/user-client
-npm install
 npm run build
-cd ../../..
 ```
 
-## User Service
-
-Ubicación:
-
-```txt
-services/user-service
-```
-
-Responsabilidad actual:
-
-- Crear usuarios.
-- Validar nombre completo.
-- Validar email.
-- Guardar usuario en DynamoDB.
-- Responder errores estándar.
-
-## Compilar User Service
-
-Desde la raíz:
-
-```bash
-npm run build -w @airbnb-clone/user-service
-```
-
-## Infraestructura CDK
-
-Ubicación:
-
-```txt
-infrastructure/cdk
-```
-
-Recursos creados actualmente:
-
-- DynamoDB `UsersTable`.
-- Lambda `UserLambda`.
-- API Gateway `AirbnbApi`.
-- Endpoint `POST /v1/users`.
-
-La Lambda se empaqueta usando `NodejsFunction` y `esbuild`, para incluir correctamente dependencias como `uuid`.
-
-## Desplegar infraestructura
-
-Desde la raíz:
+## Deploy
 
 ```bash
 cd infrastructure/cdk
-npm run build
-cdk deploy
-```
-
-Si es la primera vez usando CDK en la cuenta/región:
-
-```bash
 cdk bootstrap
-```
-
-Luego:
-
-```bash
 cdk deploy
 ```
 
-Al terminar, CDK mostrará una URL parecida a:
+Guardar outputs:
+- ApiUrl
+- UserPoolId
+- UserPoolClientId
 
-```txt
-https://xxxx.execute-api.us-east-2.amazonaws.com/prod/
-```
+## Autenticación (Cognito)
 
-## Probar endpoint
-
-Crear usuario:
+### Crear usuario
 
 ```bash
-curl -X POST https://TU_URL/v1/users \
-  -H "Content-Type: application/json" \
-  -d '{"fullName":"Juan Perez","email":"juan@test.com"}'
+aws cognito-idp sign-up \
+  --client-id TU_CLIENT_ID \
+  --username test@test.com \
+  --password Test1234 \
+  --user-attributes Name=email,Value=test@test.com
 ```
 
-Respuesta esperada:
+### Confirmar usuario
 
-```json
-{
-  "user": {
-    "userId": "uuid",
-    "fullName": "Juan Perez",
-    "email": "juan@test.com",
-    "createdAt": "2026-04-24T..."
-  }
-}
+```bash
+aws cognito-idp admin-confirm-sign-up \
+  --user-pool-id TU_USER_POOL_ID \
+  --username test@test.com
 ```
 
-## Endpoint actual
+### Login
+
+```bash
+aws cognito-idp initiate-auth \
+  --auth-flow USER_PASSWORD_AUTH \
+  --client-id TU_CLIENT_ID \
+  --auth-parameters USERNAME=test@test.com,PASSWORD=Test1234
+```
+
+Copiar el IdToken.
+
+## Endpoint protegido
 
 ### Crear usuario
 
@@ -274,100 +87,48 @@ Respuesta esperada:
 POST /v1/users
 ```
 
-Body:
+### Headers
+
+```http
+Authorization: Bearer <IdToken>
+Content-Type: application/json
+```
+
+### Body
 
 ```json
 {
-  "fullName": "Juan Perez",
-  "email": "juan@test.com"
+  "fullName": "Juan Perez"
 }
 ```
 
-Respuestas:
+El email se obtiene desde el token JWT (Cognito), no desde el body.
 
-| Código | Descripción |
-|---|---|
-| 201 | Usuario creado correctamente |
-| 400 | Error de validación |
-| 409 | Email duplicado |
-| 500 | Error interno |
-
-## Ver logs de Lambda
-
-Listar grupos de logs:
+## Pruebas
 
 ```bash
-aws logs describe-log-groups --log-group-name-prefix "/aws/lambda"
+npm test
 ```
 
-Ver logs en vivo:
+Solo user-service:
 
 ```bash
-aws logs tail "/aws/lambda/NOMBRE_DE_LA_LAMBDA" --follow
-```
-
-Ejemplo:
-
-```bash
-aws logs tail "/aws/lambda/CdkStack-UserLambdaAD4FB23B-xxxx" --follow
+npm run test -w @airbnb-clone/user-service
 ```
 
 ## Buenas prácticas aplicadas
 
-- Monorepo modular.
-- Contratos definidos con Smithy.
-- Infraestructura como código con CDK.
-- Separación entre contratos, servicios e infraestructura.
-- Lambda empaquetada con `NodejsFunction`.
-- Dependencias empaquetadas con `esbuild`.
-- Uso de variables de entorno.
-- DynamoDB en modo `PAY_PER_REQUEST`.
-- Validaciones básicas de entrada.
-- Respuestas HTTP consistentes.
-- Logs en CloudWatch.
-- `RemovalPolicy.DESTROY` usado solo por ser ambiente académico/demo.
-
-## Consideraciones de costos
-
-Este proyecto está pensado para una cuenta AWS con créditos o Free Tier.
-
-Servicios de bajo riesgo inicial:
-
-- Lambda.
-- API Gateway.
-- DynamoDB bajo demanda.
-- CloudWatch con logs controlados.
-
-Servicios avanzados que se agregarán con cuidado:
-
-- OpenSearch.
-- ElastiCache.
-- RDS PostgreSQL.
-- Step Functions.
-
-Estos servicios pueden generar costos aunque no tengan mucho tráfico, porque algunos cobran por tiempo encendido.
+- Contract-first (Smithy)
+- Infraestructura como código (CDK)
+- Autenticación JWT (Cognito)
+- Validación backend
+- Tests unitarios (Jest)
+- Separación por microservicios
+- Uso de variables de entorno
 
 ## Próximos pasos
 
-- Agregar pruebas unitarias al User Service.
-- Mejorar unicidad por email en DynamoDB.
-- Agregar Cognito para autenticación.
-- Crear Listing Service.
-- Aplicar CQRS en Listing Service.
-- Crear Booking Service.
-- Agregar SAGA con Step Functions.
-- Agregar EventBridge/SQS para eventos.
-- Agregar Review Service.
-- Agregar Notification Service.
-
-## Flujo de trabajo recomendado
-
-Para cada nuevo cambio importante se debe incluir:
-
-```txt
-1. Código de implementación.
-2. Pruebas correspondientes.
-3. Actualización del README.
-4. Comandos de ejecución o despliegue.
-5. Validación manual con curl/Postman cuando aplique.
-```
+- EventBridge (event-driven)
+- Notification Service
+- Listing Service (CQRS)
+- Booking Service (Saga)

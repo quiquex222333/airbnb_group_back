@@ -10,7 +10,18 @@ export async function createUser(
   event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResultV2> {
   const usersTable = process.env.USERS_TABLE ?? "";
+  const claims = (event.requestContext as any)?.authorizer?.claims;
+  const userEmailFromToken = claims?.email;
   try {
+    if (!userEmailFromToken) {
+      return response(401, {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "User identity not found in token"
+        }
+      });
+    }
+
     if (!usersTable) {
       return response(500, {
         error: {
@@ -25,7 +36,7 @@ export async function createUser(
       : ({} as CreateUserInput);
 
     const fullName = String(body.fullName ?? "").trim();
-    const email = String(body.email ?? "").trim().toLowerCase();
+    const email = userEmailFromToken.toLowerCase();
 
     if (!fullName || fullName.length < 2) {
       return response(400, {
