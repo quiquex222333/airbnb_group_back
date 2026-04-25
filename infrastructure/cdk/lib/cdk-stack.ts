@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as events from "aws-cdk-lib/aws-events";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
@@ -9,6 +10,8 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway";
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const eventBus = new events.EventBus(this, "AirbnbEventBus");
 
     // Cognito User Pool
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -45,12 +48,14 @@ export class CdkStack extends cdk.Stack {
       entry: "../../services/user-service/src/handler.ts",
       handler: "createUser",
       environment: {
-        USERS_TABLE: usersTable.tableName
+        USERS_TABLE: usersTable.tableName,
+        EVENT_BUS_NAME: eventBus.eventBusName
       }
     });
 
     // Permisos
     usersTable.grantWriteData(userLambda);
+    eventBus.grantPutEventsTo(userLambda);
 
     // API Gateway
     const api = new apigateway.RestApi(this, "AirbnbApi", {
