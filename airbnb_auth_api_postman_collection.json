@@ -1,0 +1,213 @@
+{
+  "info": {
+    "name": "Airbnb Auth + API Flow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "region",
+      "value": "us-east-2"
+    },
+    {
+      "key": "apiUrl",
+      "value": "https://TU_API_ID.execute-api.us-east-2.amazonaws.com/prod"
+    },
+    {
+      "key": "userPoolClientId",
+      "value": "TU_USER_POOL_CLIENT_ID"
+    },
+    {
+      "key": "email",
+      "value": "test@test.com"
+    },
+    {
+      "key": "password",
+      "value": "Test1234"
+    },
+    {
+      "key": "idToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Cognito Sign Up",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-amz-json-1.1"
+          },
+          {
+            "key": "X-Amz-Target",
+            "value": "AWSCognitoIdentityProviderService.SignUp"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ClientId\": \"{{userPoolClientId}}\",\n  \"Username\": \"{{email}}\",\n  \"Password\": \"{{password}}\",\n  \"UserAttributes\": [\n    {\n      \"Name\": \"email\",\n      \"Value\": \"{{email}}\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "https://cognito-idp.{{region}}.amazonaws.com/",
+          "protocol": "https",
+          "host": [
+            "cognito-idp",
+            "{{region}}",
+            "amazonaws",
+            "com"
+          ],
+          "path": [
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Cognito Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-amz-json-1.1"
+          },
+          {
+            "key": "X-Amz-Target",
+            "value": "AWSCognitoIdentityProviderService.InitiateAuth"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"AuthFlow\": \"USER_PASSWORD_AUTH\",\n  \"ClientId\": \"{{userPoolClientId}}\",\n  \"AuthParameters\": {\n    \"USERNAME\": \"{{email}}\",\n    \"PASSWORD\": \"{{password}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "https://cognito-idp.{{region}}.amazonaws.com/",
+          "protocol": "https",
+          "host": [
+            "cognito-idp",
+            "{{region}}",
+            "amazonaws",
+            "com"
+          ],
+          "path": [
+            ""
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.AuthenticationResult && json.AuthenticationResult.IdToken) {",
+              "  pm.collectionVariables.set('idToken', json.AuthenticationResult.IdToken);",
+              "  pm.environment.set('idToken', json.AuthenticationResult.IdToken);",
+              "}",
+              "pm.test('Login returns token', function () {",
+              "  pm.expect(json.AuthenticationResult.IdToken).to.exist;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "03 - Create Internal User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Juan Perez\"\n}"
+        },
+        "url": {
+          "raw": "{{apiUrl}}/v1/users",
+          "host": [
+            "{{apiUrl}}"
+          ],
+          "path": [
+            "v1",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Create Listing",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Depto en La Paz\",\n  \"price\": 50\n}"
+        },
+        "url": {
+          "raw": "{{apiUrl}}/v1/listings",
+          "host": [
+            "{{apiUrl}}"
+          ],
+          "path": [
+            "v1",
+            "listings"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Create Listing Validation Error",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"\",\n  \"price\": 0\n}"
+        },
+        "url": {
+          "raw": "{{apiUrl}}/v1/listings",
+          "host": [
+            "{{apiUrl}}"
+          ],
+          "path": [
+            "v1",
+            "listings"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
