@@ -47,6 +47,8 @@ const DashboardDummy = () => {
   );
 };
 
+import HomeScreen from '../pages/HomeScreen';
+
 export const AppRouter = () => {
   const [isChecking, setIsChecking] = useState(true);
   const setCredentials = useAuthStore(state => state.setCredentials);
@@ -81,17 +83,21 @@ export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Ruta Pública Principal */}
+        <Route path="/" element={<HomeScreen />} />
+
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/register" element={<RegisterScreen />} />
         
-        {/* Rutas Privadas / Principal */}
+        {/* Rutas Privadas */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <DashboardDummy />
           </ProtectedRoute>
         } />
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Fallback a Home en lugar de Login para vista pública */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
