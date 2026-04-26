@@ -10,7 +10,23 @@ use smithy.api#length
 @title("Airbnb Auth Service")
 service AuthService {
     version: "2026-04-26",
-    operations: [Register, Login, ConfirmSignUp]
+    operations: [Register, Login, ConfirmSignUp, Refresh, Logout]
+}
+
+/// Permite refrescar el token de acceso usando un refresh token.
+@http(method: "POST", uri: "/v1/auth/refresh", code: 200)
+operation Refresh {
+    input: RefreshInput,
+    output: LoginOutput,
+    errors: [ValidationError, UnauthorizedError, InternalServerError]
+}
+
+/// Cierra la sesión del usuario.
+@http(method: "POST", uri: "/v1/auth/logout", code: 200)
+operation Logout {
+    input: LogoutInput,
+    output: LogoutOutput,
+    errors: [InternalServerError]
 }
 
 /// Permite registrar un nuevo usuario en el sistema.
@@ -114,6 +130,21 @@ structure ConfirmSignUpInput {
 }
 
 structure ConfirmSignUpOutput {
+    @required
+    message: String
+}
+
+structure RefreshInput {
+    @required
+    refreshToken: String
+}
+
+structure LogoutInput {
+    @required
+    accessToken: String
+}
+
+structure LogoutOutput {
     @required
     message: String
 }
