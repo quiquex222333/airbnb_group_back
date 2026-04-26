@@ -3,6 +3,12 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { EventBridgeClient, PutEventsCommand } from "@aws-sdk/client-eventbridge";
 import { v4 as uuidv4 } from "uuid";
+import {
+  CreateBookingInput,
+  CreateBookingOutput,
+  Booking,
+  GetBookingByIdOutput
+} from "@airbnb-clone/contracts";
 
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const eventBridge = new EventBridgeClient({});
@@ -20,7 +26,9 @@ export const createBooking = async (
       });
     }
 
-    const body = event.body ? JSON.parse(event.body) : {};
+    const body: CreateBookingInput = event.body
+      ? JSON.parse(event.body)
+      : ({} as CreateBookingInput);
 
     const listingId = String(body.listingId ?? "").trim();
     const checkIn = String(body.checkIn ?? "").trim();
@@ -34,7 +42,7 @@ export const createBooking = async (
       });
     }
 
-    const booking = {
+    const booking : Booking = {
       bookingId: uuidv4(),
       listingId,
       guestId,
@@ -67,7 +75,9 @@ export const createBooking = async (
       })
     );
 
-    return response(201, { booking });
+    const output: CreateBookingOutput = { booking };
+
+    return response(201, output);
   } catch (error) {
     console.error("CreateBookingError", error);
 
@@ -102,7 +112,11 @@ export const getBookingById = async (
       });
     }
 
-    return response(200, { booking: result.Item });
+    const output: GetBookingByIdOutput = {
+      booking: result.Item as Booking
+    };
+
+    return response(200, output);
   } catch (error) {
     console.error("GetBookingError", error);
 

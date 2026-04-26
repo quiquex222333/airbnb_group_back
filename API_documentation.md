@@ -1,96 +1,206 @@
-# Airbnb Microservices API Documentation
+# Airbnb Group Services - API Documentation
 
-## Descripción general
+Documentacion actualizada al estado real del codigo en este repositorio.
 
-API académica basada en una arquitectura de microservicios inspirada en Airbnb.
+## 1. Alcance
 
-La solución actual incluye:
+Esta documentacion cubre dos APIs distintas:
 
-- API Gateway
-- Cognito para autenticación JWT
-- User Service
-- Listing Service
-- Notification Service
-- DynamoDB
-- EventBridge
-- SQS
+1. **BFF Auth API** (`backend`, Express + Cognito)
+2. **Microservices API** (`services/*`, expuesta via API Gateway en `/v1`)
 
-## Base URL
+## 2. Base URLs
+
+### 2.1 BFF Auth API (local)
 
 ```txt
-{{apiUrl}}
+http://localhost:3000/api/v1
 ```
 
-Ejemplo:
+### 2.2 Microservices API (deploy AWS)
 
 ```txt
-https://xxxxx.execute-api.us-east-2.amazonaws.com/prod
+{ApiUrl}v1
 ```
 
-## Autenticación
+Donde `ApiUrl` es output del stack CDK del repo de infraestructura.
 
-Los endpoints protegidos requieren un `IdToken` de Cognito.
+## 3. Autenticacion
 
+### 3.1 BFF
+
+- `login` retorna `accessToken` en body.
+- `refreshToken` se guarda como cookie HTTPOnly.
+- endpoints protegidos usan header:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+### 3.2 Microservicios
+
+Todos los endpoints `/v1/*` usan Cognito Authorizer en API Gateway.
 Header requerido:
 
 ```http
-Authorization: Bearer {{idToken}}
+Authorization: Bearer <IdToken o AccessToken valido segun authorizer>
 Content-Type: application/json
 ```
 
-## Obtener token con AWS CLI
+## 4. BFF Auth API
 
-### Crear usuario Cognito
+### 4.1 POST `/auth/register`
 
-```bash
-aws cognito-idp sign-up \
-  --client-id TU_USER_POOL_CLIENT_ID \
-  --username test@test.com \
-  --password Test1234 \
-  --user-attributes Name=email,Value=test@test.com
-```
+Registra usuario en Cognito.
 
-### Confirmar usuario
-
-```bash
-aws cognito-idp admin-confirm-sign-up \
-  --user-pool-id TU_USER_POOL_ID \
-  --username test@test.com
-```
-
-### Login
-
-```bash
-aws cognito-idp initiate-auth \
-  --auth-flow USER_PASSWORD_AUTH \
-  --client-id TU_USER_POOL_CLIENT_ID \
-  --auth-parameters USERNAME=test@test.com,PASSWORD=Test1234
-```
-
-Usar el valor de:
+Request body:
 
 ```json
-"IdToken": "..."
+{
+  "name": "Juan Perez",
+  "email": "juan@test.com",
+  "password": "Test1234!",
+  "role": "guest"
+}
 ```
 
-# Endpoints
+Response `201`:
 
-## 1. Crear usuario
-
-```http
-POST /v1/users
+```json
+{
+  "userId": "uuid",
+  "email": "juan@test.com",
+  "role": "guest",
+  "status": "UNCONFIRMED"
+}
 ```
 
-Crea un usuario interno en DynamoDB usando el email obtenido desde Cognito JWT.
+Errores comunes:
 
-### Headers
+- `409 EMAIL_ALREADY_EXISTS`
+- `422 INVALID_PASSWORD_POLICY`
 
-```http
-Authorization: Bearer {{idToken}}
-Content-Type: application/json
+### 4.2 POST `/auth/confirm`
+
+Confirma usuario con codigo enviado por Cognito.
+
+Request body:
+
+```json
+{
+  "email": "juan@test.com",
+  "code": "123456"
+}
 ```
 
-### Body
+Response `200`:
+
+```json
+{
+  "message": "Account confirmed successfully"
+}
+```
+
+### 4.3 POST `/auth/login`
+
+Autentica usuario y crea sesion.
+
+Request body:
+
+```json
+{
+  "email": "juan@test.com",
+  "password": "Test1234!"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "accessToken": "...",
+  "expiresIn": 3600,
+  "user": {
+    "id": "uuid",
+    "email": "juan@test.com",
+    "name": "Juan Perez",
+    "role": "guest"
+  }
+}
+```
+
+Notas:
+
+- `refreshToken` va en cookie HTTPOnly (no en body).
+
+### 4.4 POST `/auth/refresh`
+
+Renueva Access Token usando cookie `refreshToken`.
+
+Response `200`:
+
+```json
+{
+  "accessToken": "...",
+  "expiresIn": 3600,
+  "user": {
+    "id": "uuid",
+    "email": "juan@test.com",
+    "name": "Juan Perez",
+    "role": "guest"
+  }
+}
+```
+
+Error tipico: `401 TOKEN_MISSING`.
+
+### 4.5 POST `/auth/logout`
+
+Revoca sesion en Cognito (si hay access token) y elimina cookie.
+
+Response `200`:
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+### 4.6 GET `/auth/me`
+
+Obtiene perfil de usuario autenticado.
+
+Response `200`:
+
+```json
+{
+  "id": "uuid",
+  "email": "juan@test.com",
+  "name": "Juan Perez",
+  "role": "guest"
+}
+```
+
+### 4.7 GET `/health`
+
+Health check del backend.
+
+Response `200`:
+
+```json
+{
+  "status": "OK",
+  "version": "1.0"
+}
+```
+
+## 5. Microservices API (`/v1`)
+
+## 5.1 POST `/users`
+
+Crea usuario interno. El email se toma del claim `email` del token.
+
+Request body:
 
 ```json
 {
@@ -98,12 +208,12 @@ Content-Type: application/json
 }
 ```
 
-### Respuesta 201
+Response `201`:
 
 ```json
 {
   "user": {
-    "email": "test@test.com",
+    "email": "juan@test.com",
     "userId": "uuid",
     "fullName": "Juan Perez",
     "createdAt": "2026-04-25T00:00:00.000Z"
@@ -111,50 +221,18 @@ Content-Type: application/json
 }
 ```
 
-### Errores posibles
+Errores comunes:
 
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "fullName is required and must have at least 2 characters"
-  }
-}
-```
+- `401 UNAUTHORIZED` (token sin email)
+- `400 VALIDATION_ERROR` (`fullName` invalido)
+- `409 CONFLICT_ERROR` (email ya registrado)
+- `500 CONFIGURATION_ERROR` (`USERS_TABLE` faltante)
 
-```json
-{
-  "message": "Unauthorized"
-}
-```
+## 5.2 POST `/listings`
 
-```json
-{
-  "error": {
-    "code": "CONFLICT_ERROR",
-    "message": "A user with this email already exists"
-  }
-}
-```
+Crea listing. El `ownerId` se toma de `claims.sub`.
 
-## 2. Crear listing
-
-```http
-POST /v1/listings
-```
-
-Crea una propiedad/listing asociada al usuario autenticado.
-
-El `ownerId` se obtiene desde el claim `sub` del JWT Cognito.
-
-### Headers
-
-```http
-Authorization: Bearer {{idToken}}
-Content-Type: application/json
-```
-
-### Body
+Request body:
 
 ```json
 {
@@ -163,7 +241,7 @@ Content-Type: application/json
 }
 ```
 
-### Respuesta 201
+Response `201`:
 
 ```json
 {
@@ -178,92 +256,162 @@ Content-Type: application/json
 }
 ```
 
-### Errores posibles
+## 5.3 POST `/bookings`
+
+Crea reserva. El `guestId` se toma de `claims.sub`.
+
+Request body:
 
 ```json
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input"
-  }
+  "listingId": "listing-uuid",
+  "checkIn": "2026-05-01",
+  "checkOut": "2026-05-05",
+  "guests": 2,
+  "totalAmount": 200
 }
 ```
 
-```json
-{
-  "message": "Unauthorized"
-}
-```
-
-# Eventos
-
-## user.created
-
-Emitido por User Service después de crear un usuario.
+Response `201`:
 
 ```json
 {
-  "source": "user.service",
-  "detailType": "user.created",
-  "detail": {
-    "userId": "uuid",
-    "email": "test@test.com",
-    "fullName": "Juan Perez",
+  "booking": {
+    "bookingId": "uuid",
+    "listingId": "listing-uuid",
+    "guestId": "cognito-sub",
+    "checkIn": "2026-05-01",
+    "checkOut": "2026-05-05",
+    "guests": 2,
+    "totalAmount": 200,
+    "status": "pending",
     "createdAt": "2026-04-25T00:00:00.000Z"
   }
 }
 ```
 
-Flujo:
+## 5.4 GET `/bookings/{bookingId}`
 
-```txt
-User Service -> EventBridge -> SQS -> Notification Service
-```
+Obtiene reserva por id.
 
-## listing.created
-
-Emitido por Listing Service después de crear una propiedad.
+Response `200`:
 
 ```json
 {
-  "source": "listing.service",
-  "detailType": "listing.created",
-  "detail": {
-    "listingId": "uuid",
-    "ownerId": "cognito-sub",
-    "title": "Depto en La Paz",
-    "price": 50,
-    "status": "draft",
+  "booking": {
+    "bookingId": "uuid",
+    "listingId": "listing-uuid",
+    "guestId": "cognito-sub",
+    "checkIn": "2026-05-01",
+    "checkOut": "2026-05-05",
+    "guests": 2,
+    "totalAmount": 200,
+    "status": "pending",
     "createdAt": "2026-04-25T00:00:00.000Z"
   }
 }
 ```
 
-# Pruebas rápidas con curl
+Errores comunes:
 
-## Crear usuario
+- `400 VALIDATION_ERROR` (`bookingId` faltante)
+- `404 NOT_FOUND`
 
-```bash
-curl -X POST "$TU_URL/v1/users" \
-  -H "Authorization: Bearer $TU_ID_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"fullName":"Juan Perez"}'
+## 5.5 POST `/reviews`
+
+Crea review para un listing.
+
+Request body:
+
+```json
+{
+  "listingId": "listing-uuid",
+  "rating": 5,
+  "comment": "Excelente estadia"
+}
 ```
 
-## Crear listing
+Response `201`:
 
-```bash
-curl -X POST "$TU_URL/v1/listings" \
-  -H "Authorization: Bearer $TU_ID_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Depto en La Paz","price":50}'
+```json
+{
+  "review": {
+    "reviewId": "uuid",
+    "listingId": "listing-uuid",
+    "userId": "cognito-sub",
+    "rating": 5,
+    "comment": "Excelente estadia",
+    "createdAt": "2026-04-25T00:00:00.000Z"
+  }
+}
 ```
 
-# Variables recomendadas para Postman
+## 5.6 GET `/reviews/listing/{listingId}`
 
-| Variable | Descripción |
-|---|---|
-| `apiUrl` | URL base de API Gateway sin slash final |
-| `idToken` | Token JWT Cognito IdToken |
-| `userPoolId` | ID del User Pool |
-| `userPoolClientId` | ID del App Client |
+Lista reviews por listing usando GSI `listingId-index`.
+
+Response `200`:
+
+```json
+{
+  "reviews": [
+    {
+      "reviewId": "uuid",
+      "listingId": "listing-uuid",
+      "userId": "cognito-sub",
+      "rating": 5,
+      "comment": "Excelente estadia",
+      "createdAt": "2026-04-25T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+## 6. Eventos
+
+### 6.1 `listing.created`
+
+Emitido por `listing-service`.
+
+### 6.2 `booking.created`
+
+Emitido por `booking-service`.
+
+### 6.3 `review.created`
+
+Emitido por `review-service`.
+
+### 6.4 `user.created`
+
+- Existe regla de infraestructura para este evento.
+- El `user-service` actual todavia no lo publica.
+
+## 7. Curl rapido
+
+### 7.1 Crear listing
+
+```bash
+curl -X POST "${API_URL}/v1/listings" \
+  -H "Authorization: Bearer ${ID_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Depto centrico","price":55}'
+```
+
+### 7.2 Crear booking
+
+```bash
+curl -X POST "${API_URL}/v1/bookings" \
+  -H "Authorization: Bearer ${ID_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"listingId":"abc","checkIn":"2026-05-01","checkOut":"2026-05-03","guests":2,"totalAmount":110}'
+```
+
+### 7.3 Crear review
+
+```bash
+curl -X POST "${API_URL}/v1/reviews" \
+  -H "Authorization: Bearer ${ID_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"listingId":"abc","rating":5,"comment":"Muy recomendado"}'
+```
+

@@ -1,5 +1,5 @@
 {
-  "name": "@airbnb-clone/listing-service",
+  "name": "@airbnb-clone/review-service",
   "version": "1.0.0",
   "main": "dist/handler.js",
   "scripts": {

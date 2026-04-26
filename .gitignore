@@ -1,8 +1,50 @@
-node_modules
-dist
-build
-coverage
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+build/
+dist/
+coverage/
+**/build/
+**/dist/
+**/coverage/
+*.tsbuildinfo
+
+# Runtime logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
 .env
-.env.local
+.env.*
+!.env.example
+!template.env
+!backend/template.env
+!frontend/template.env
+
+# Generated artifacts
+generated/typescript/
+services/generated/
+contracts/smithy/build/
+services/contracts/smithy/build/
+
+# AWS / deployment artifacts
+cdk.out/
+.serverless/
+
+# Tooling caches
+.vite/
+.npm/
+.eslintcache
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
-generated/typescript
+**/.DS_Store

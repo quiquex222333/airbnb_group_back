@@ -7,9 +7,10 @@
     "test": "echo \"no tests yet\""
   },
   "dependencies": {
+    "@airbnb-clone/contracts": "^1.0.0",
     "@aws-sdk/client-dynamodb": "^3.758.0",
-    "@aws-sdk/lib-dynamodb": "^3.758.0",
     "@aws-sdk/client-eventbridge": "^3.758.0",
+    "@aws-sdk/lib-dynamodb": "^3.758.0",
     "uuid": "^11.0.5"
   }
 }

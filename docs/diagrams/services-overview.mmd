@@ -1,0 +1,18 @@
+flowchart TD
+    UserService[User Service]
+    ListingService[Listing Service]
+    BookingService[Booking Service]
+    ReviewService[Review Service]
+    NotificationService[Notification Service]
+
+    UserService --> Contracts[shared/contracts]
+    ListingService --> Contracts
+    BookingService --> Contracts
+    ReviewService --> Contracts
+
+    UserService --> UserEvents[user.created]
+    ListingService --> ListingEvents[listing.created]
+    BookingService --> BookingEvents[booking.created]
+    ReviewService --> ReviewEvents[review.created]
+
+    NotificationService --> Process[Process async events]

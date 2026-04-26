@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Client
+    participant UserService
+    participant DynamoDB
+    participant EventBridge
+    participant NotificationService
+
+    Client->>UserService: POST /v1/users
+    UserService->>UserService: Extract email from Cognito JWT
+    UserService->>DynamoDB: Save user
+    UserService->>EventBridge: Publish user.created
+    EventBridge-->>NotificationService: Async notification event
+    UserService-->>Client: 201 Created
