@@ -1,10 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import { authRouter } from './routes/authRoutes';
-
-dotenv.config();
 
 const app = express();
 
