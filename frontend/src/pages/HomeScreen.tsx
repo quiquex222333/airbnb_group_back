@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Menu, User, Heart, Star, ChevronLeft, ChevronRight, HelpCircle, Sun, Moon } from 'lucide-react';
+import { Search, Menu, Heart, Star, ChevronLeft, ChevronRight, HelpCircle, Sun, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const HomeScreen = () => {
