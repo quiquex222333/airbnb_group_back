@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Client
+    participant ReviewService
+    participant DynamoDB
+    participant EventBridge
+
+    Client->>ReviewService: POST /v1/reviews
+    ReviewService->>ReviewService: Extract userId from Cognito JWT
+    ReviewService->>DynamoDB: Save review
+    ReviewService->>EventBridge: Publish review.created
+    ReviewService-->>Client: 201 Created

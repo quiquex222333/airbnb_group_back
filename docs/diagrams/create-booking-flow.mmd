@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Client
+    participant BookingService
+    participant DynamoDB
+    participant EventBridge
+    participant NotificationService
+
+    Client->>BookingService: POST /v1/bookings
+    BookingService->>BookingService: Extract guestId from Cognito JWT
+    BookingService->>DynamoDB: Save booking with status pending
+    BookingService->>EventBridge: Publish booking.created
+    EventBridge-->>NotificationService: Async notification event
+    BookingService-->>Client: 201 Created

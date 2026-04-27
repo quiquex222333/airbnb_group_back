@@ -3,6 +3,11 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { EventBridgeClient, PutEventsCommand } from "@aws-sdk/client-eventbridge";
 import { v4 as uuidv4 } from "uuid";
+import {
+  CreateListingInput,
+  CreateListingOutput,
+  Listing
+} from "@airbnb-clone/contracts";
 
 const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const eventBridge = new EventBridgeClient({});
@@ -20,7 +25,9 @@ export const createListing = async (
       });
     }
 
-    const body = event.body ? JSON.parse(event.body) : {};
+    const body: CreateListingInput = event.body
+      ? JSON.parse(event.body)
+      : ({} as CreateListingInput);
 
     const title = String(body.title ?? "").trim();
     const price = Number(body.price ?? 0);
@@ -31,7 +38,7 @@ export const createListing = async (
       });
     }
 
-    const listing = {
+    const listing : Listing = {
       listingId: uuidv4(),
       ownerId,
       title,
@@ -60,7 +67,9 @@ export const createListing = async (
       })
     );
 
-    return response(201, { listing });
+    const output: CreateListingOutput = { listing };
+
+    return response(201, output);
   } catch (error) {
     console.error(error);
     return response(500, {

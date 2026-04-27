@@ -395,6 +395,76 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "08 - Reviews",
+      "request": {
+        "auth": {
+          "type": "inherit"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}",
+            "id": 0
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "id": 1
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"listingId\": \"123\",\n    \"rating\": 5,\n    \"comment\": \"Excelente lugar\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apiUrl}}/v1/reviews",
+          "host": [
+            "{{apiUrl}}"
+          ],
+          "path": [
+            "v1",
+            "reviews"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Get Reviews",
+      "request": {
+        "auth": {
+          "type": "inherit"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{idToken}}",
+            "id": 0
+          }
+        ],
+        "url": {
+          "raw": "{{apiUrl}}/v1/reviews/listing/123",
+          "host": [
+            "{{apiUrl}}"
+          ],
+          "path": [
+            "v1",
+            "reviews",
+            "listing",
+            "123"
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "variable": [

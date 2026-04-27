@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Client
+    participant ListingService
+    participant DynamoDB
+    participant EventBridge
+
+    Client->>ListingService: POST /v1/listings
+    ListingService->>ListingService: Extract ownerId from Cognito JWT
+    ListingService->>DynamoDB: Save listing
+    ListingService->>EventBridge: Publish listing.created
+    ListingService-->>Client: 201 Created

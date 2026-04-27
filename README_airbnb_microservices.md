@@ -1,134 +1,72 @@
-# Airbnb Microservices Clone
+# Guia Rapida - Airbnb Microservices
 
-## Descripción
-Proyecto académico de microservicios inspirado en Airbnb usando AWS (Free Tier), CDK, TypeScript y Smithy.
+Este documento resume solo la linea de microservicios (`services/*`).
+Para la documentacion general del repositorio usa `README.md`.
 
-## Arquitectura actual
+## 1. Servicios disponibles
 
-Client → API Gateway → Lambda (User Service) → DynamoDB  
-                    ↘ Cognito (Auth)
+- `user-service`
+- `listing-service`
+- `booking-service`
+- `review-service`
+- `notification-service`
 
-## Tecnologías
-- AWS CDK
-- Lambda
-- API Gateway
-- DynamoDB
-- Cognito
-- TypeScript
-- Jest
+## 2. Endpoints `/v1` (API Gateway)
 
-## Requisitos
+- `POST /v1/users`
+- `POST /v1/listings`
+- `POST /v1/bookings`
+- `GET /v1/bookings/{bookingId}`
+- `POST /v1/reviews`
+- `GET /v1/reviews/listing/{listingId}`
 
-- Node.js 20+
-- AWS CLI configurado
-- CDK instalado
+Todos los endpoints requieren autenticacion Cognito en API Gateway.
 
-## Instalación
+## 3. Variables por servicio
 
-```bash
-npm install
-```
+- `user-service`: `USERS_TABLE`
+- `listing-service`: `LISTINGS_TABLE`, `EVENT_BUS_NAME`
+- `booking-service`: `BOOKINGS_TABLE`, `EVENT_BUS_NAME`
+- `review-service`: `REVIEWS_TABLE`, `EVENT_BUS_NAME`
+- `notification-service`: consume SQS, sin vars obligatorias hoy
 
-## Build
+## 4. Eventos
+
+Productores actuales:
+
+- `listing.created`
+- `booking.created`
+- `review.created`
+
+Consumidor:
+
+- `notification-service` (via SQS)
+
+Nota: existe regla infra para `user.created`, pero hoy no se emite desde `user-service`.
+
+## 5. Comandos utiles
+
+Desde raiz de repo:
 
 ```bash
 npm run build
+npm run test
 ```
 
-## Deploy
-
-```bash
-cd infrastructure/cdk
-cdk bootstrap
-cdk deploy
-```
-
-Guardar outputs:
-- ApiUrl
-- UserPoolId
-- UserPoolClientId
-
-## Autenticación (Cognito)
-
-### Crear usuario
-
-```bash
-aws cognito-idp sign-up \
-  --client-id TU_CLIENT_ID \
-  --username test@test.com \
-  --password Test1234 \
-  --user-attributes Name=email,Value=test@test.com
-```
-
-### Confirmar usuario
-
-```bash
-aws cognito-idp admin-confirm-sign-up \
-  --user-pool-id TU_USER_POOL_ID \
-  --username test@test.com
-```
-
-### Login
-
-```bash
-aws cognito-idp initiate-auth \
-  --auth-flow USER_PASSWORD_AUTH \
-  --client-id TU_CLIENT_ID \
-  --auth-parameters USERNAME=test@test.com,PASSWORD=Test1234
-```
-
-Copiar el IdToken.
-
-## Endpoint protegido
-
-### Crear usuario
-
-```http
-POST /v1/users
-```
-
-### Headers
-
-```http
-Authorization: Bearer <IdToken>
-Content-Type: application/json
-```
-
-### Body
-
-```json
-{
-  "fullName": "Juan Perez"
-}
-```
-
-El email se obtiene desde el token JWT (Cognito), no desde el body.
-
-## Pruebas
-
-```bash
-npm test
-```
-
-Solo user-service:
+Tests por servicio:
 
 ```bash
 npm run test -w @airbnb-clone/user-service
+npm run test -w @airbnb-clone/notification-service
 ```
 
-## Buenas prácticas aplicadas
+## 6. Contrato
 
-- Contract-first (Smithy)
-- Infraestructura como código (CDK)
-- Autenticación JWT (Cognito)
-- Validación backend
-- Tests unitarios (Jest)
-- Separación por microservicios
-- Uso de variables de entorno
+Contrato principal de microservicios:
 
-## Próximos pasos
+- `contracts/smithy/models/airbnb.smithy`
 
-- EventBridge (event-driven)
-- Notification Service
-- Listing Service (CQRS)
-- Booking Service (Saga)
+Tipos compartidos TypeScript:
+
+- `shared/contracts/src/index.ts`
+
