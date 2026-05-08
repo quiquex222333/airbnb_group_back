@@ -49,6 +49,11 @@ describe("Booking Service Handler Integration Tests", () => {
 
         const event = {
             pathParameters: { bookingId: createdBookingId },
+            requestContext: {
+                authorizer: {
+                    claims: { sub: "integration-test-user" },
+                },
+            },
         } as unknown as APIGatewayProxyEventV2;
 
         const response = await getBookingById(event) as any;
