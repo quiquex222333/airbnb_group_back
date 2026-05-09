@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "smithy:build": "cd contracts/smithy && smithy build",
-    "smithy:copy": "rm -rf generated/typescript/airbnb-client && mkdir -p generated/typescript/airbnb-client && cp -R contracts/smithy/build/smithy/source/typescript-client-codegen/* generated/typescript/airbnb-client/",
+    "smithy:copy": "rimraf generated/typescript/airbnb-client && shx mkdir -p generated/typescript/airbnb-client && shx cp -r contracts/smithy/build/smithy/source/typescript-client-codegen/* generated/typescript/airbnb-client/",
     "smithy:fix-npm": "node scripts/fix-generated-client-package.js",
     "generated:build": "npm run build -w @airbnb-clone/generated-client",
     "contracts:build": "npm run build -w @airbnb-clone/contracts",
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^25.6.0",
+    "cross-env": "^10.1.0",
     "esbuild": "^0.28.0",
     "jest": "^30.3.0",
     "ts-jest": "^29.4.9",

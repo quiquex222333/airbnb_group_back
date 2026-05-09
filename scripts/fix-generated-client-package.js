@@ -10,7 +10,12 @@ if (!fs.existsSync(packagePath)) {
 const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 
 pkg.scripts = pkg.scripts || {};
-pkg.scripts.build = "concurrently 'npm run build:cjs' 'npm run build:es' 'npm run build:types'";
+
+// Compatible con Windows y macOS
+const isWindows = process.platform === 'win32';
+pkg.scripts.build = isWindows
+  ? 'concurrently "npm run build:cjs" "npm run build:es" "npm run build:types"'
+  : "concurrently 'npm run build:cjs' 'npm run build:es' 'npm run build:types'";
 
 fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2));
 

@@ -10,6 +10,7 @@ use smithy.api#httpError
 use smithy.api#httpLabel
 use smithy.api#readonly
 
+
 service AirbnbService {
     version: "2026-04-26",
     operations: [
@@ -23,7 +24,9 @@ service AirbnbService {
         CreateBooking,
         GetBookingById,
         CreateReview,
-        GetReviewsByListing
+        GetReviewsByListing,
+        GetListingsByOwner,
+        GetBookingsByGuest
     ]
 }
 
@@ -176,6 +179,25 @@ operation CreateListing {
     errors: [ValidationError, UnauthorizedError]
 }
 
+@readonly
+@http(method: "GET", uri: "/v1/listings/my", code: 200)
+operation GetListingsByOwner {
+    input: GetListingsByOwnerInput
+    output: GetListingsByOwnerOutput
+    errors: [UnauthorizedError]
+}
+
+structure GetListingsByOwnerInput {}
+
+structure GetListingsByOwnerOutput {
+    @required
+    listings: ListingList
+}
+
+list ListingList {
+    member: Listing
+}
+
 structure CreateListingInput {
     @required
     @length(min: 3, max: 120)
@@ -226,6 +248,25 @@ operation GetBookingById {
     input: GetBookingByIdInput
     output: GetBookingByIdOutput
     errors: [ValidationError, UnauthorizedError, NotFoundError]
+}
+
+@readonly
+@http(method: "GET", uri: "/v1/bookings/my", code: 200)
+operation GetBookingsByGuest {
+    input: GetBookingsByGuestInput
+    output: GetBookingsByGuestOutput
+    errors: [UnauthorizedError]
+}
+
+structure GetBookingsByGuestInput {}
+
+structure GetBookingsByGuestOutput {
+    @required
+    bookings: BookingList
+}
+
+list BookingList {
+    member: Booking
 }
 
 structure CreateBookingInput {
