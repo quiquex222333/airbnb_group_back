@@ -515,7 +515,7 @@ function response(
     statusCode,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "http://localhost:5173",
+      "Access-Control-Allow-Origin": process.env.FRONTEND_URL!,
       "Access-Control-Allow-Credentials": "true",
       ...headers
     },
