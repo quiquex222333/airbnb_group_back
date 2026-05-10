@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { EventBridgeClient, PutEventsCommand } from "@aws-sdk/client-eventbridge";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -143,6 +143,73 @@ export const getBookingById = async (
 
     return response(500, {
       error: { code: "INTERNAL_ERROR", message: "Unexpected error getting booking" }
+    });
+  }
+};
+
+export const getBookingsByGuest = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> => {
+  try {
+    const claims = (event.requestContext as any)?.authorizer?.claims;
+    const guestId = claims?.sub;
+
+    if (!guestId) {
+      return response(401, {
+        error: { code: "UNAUTHORIZED", message: "User not authenticated" }
+      });
+    }
+
+    const result = await dynamo.send(
+      new QueryCommand({
+        TableName: process.env.BOOKINGS_TABLE,
+        IndexName: "guestId-index",
+        KeyConditionExpression: "guestId = :g",
+        ExpressionAttributeValues: { ":g": guestId }
+      })
+    );
+
+    return response(200, { bookings: (result.Items ?? []) as Booking[] });
+  } catch (error) {
+    console.error("GetBookingsByGuestError", error);
+    return response(500, {
+      error: { code: "INTERNAL_ERROR", message: "Unexpected error" }
+    });
+  }
+};
+
+export const getBookingsByListing = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> => {
+  try {
+    const claims = (event.requestContext as any)?.authorizer?.claims;
+    if (!claims?.sub) {
+      return response(401, {
+        error: { code: "UNAUTHORIZED", message: "User not authenticated" }
+      });
+    }
+
+    const listingId = event.pathParameters?.listingId;
+    if (!listingId) {
+      return response(400, {
+        error: { code: "VALIDATION_ERROR", message: "listingId is required" }
+      });
+    }
+
+    const result = await dynamo.send(
+      new QueryCommand({
+        TableName: process.env.BOOKINGS_TABLE,
+        IndexName: "listingId-index",
+        KeyConditionExpression: "listingId = :l",
+        ExpressionAttributeValues: { ":l": listingId }
+      })
+    );
+
+    return response(200, { bookings: (result.Items ?? []) as Booking[] });
+  } catch (error) {
+    console.error("GetBookingsByListingError", error);
+    return response(500, {
+      error: { code: "INTERNAL_ERROR", message: "Unexpected error" }
     });
   }
 };

@@ -34,7 +34,6 @@ jest.mock("uuid", () => ({
     v4: jest.fn(),
 }));
 
-// Import handler AFTER mocks are defined
 import { createBooking, getBookingById } from "../../../services/booking-service/src/handler";
 
 describe("Booking Service Handler Unit Tests", () => {
@@ -43,7 +42,6 @@ describe("Booking Service Handler Unit Tests", () => {
         jest.spyOn(console, 'error').mockImplementation(() => { });
         process.env.BOOKINGS_TABLE = "test-bookings-table";
         process.env.EVENT_BUS_NAME = "test-event-bus";
-
         (uuidv4 as any).mockReturnValue("test-uuid-1234");
     });
 
@@ -69,7 +67,7 @@ describe("Booking Service Handler Unit Tests", () => {
                     },
                 },
                 body: JSON.stringify({
-                    listingId: "", // Invalid
+                    listingId: "",
                     checkIn: "2023-01-01",
                     checkOut: "2023-01-05",
                     guests: 2,
@@ -104,7 +102,6 @@ describe("Booking Service Handler Unit Tests", () => {
             mockDynamoSend.mockResolvedValueOnce({});
             mockEventBridgeSend.mockResolvedValueOnce({});
 
-            // Mock Date to have predictable createdAt
             const mockDate = new Date("2023-01-01T00:00:00.000Z");
             const spy = jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
 
@@ -161,6 +158,11 @@ describe("Booking Service Handler Unit Tests", () => {
         it("should return 400 if bookingId is missing", async () => {
             const event = {
                 pathParameters: {},
+                requestContext: {
+                    authorizer: {
+                        claims: { sub: "user-123" },
+                    },
+                },
             } as unknown as APIGatewayProxyEventV2;
 
             const response = await getBookingById(event) as any;
@@ -174,6 +176,11 @@ describe("Booking Service Handler Unit Tests", () => {
         it("should return 404 if booking is not found", async () => {
             const event = {
                 pathParameters: { bookingId: "non-existent-id" },
+                requestContext: {                           
+                    authorizer: {
+                        claims: { sub: "user-123" },
+                    },
+                },
             } as unknown as APIGatewayProxyEventV2;
 
             mockDynamoSend.mockResolvedValueOnce({ Item: undefined });
@@ -189,6 +196,11 @@ describe("Booking Service Handler Unit Tests", () => {
         it("should return 200 and the booking if found", async () => {
             const event = {
                 pathParameters: { bookingId: "existing-id" },
+                requestContext: {                           
+                    authorizer: {
+                        claims: { sub: "user-123" },
+                    },
+                },
             } as unknown as APIGatewayProxyEventV2;
 
             const mockBooking = {
@@ -211,6 +223,11 @@ describe("Booking Service Handler Unit Tests", () => {
         it("should return 500 if DynamoDB fails", async () => {
             const event = {
                 pathParameters: { bookingId: "existing-id" },
+                requestContext: {                           
+                    authorizer: {
+                        claims: { sub: "user-123" },
+                    },
+                },
             } as unknown as APIGatewayProxyEventV2;
 
             mockDynamoSend.mockRejectedValueOnce(new Error("DynamoDB error"));
