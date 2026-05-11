@@ -3,14 +3,23 @@ import { handleUserCreated } from "../../../services/notification-service/src/ha
 
 describe("Notification Service Handler Integration Tests", () => {
     it("should process user.created event without throwing errors", async () => {
+        if (!process.env.NOTIFICATIONS_TABLE) {
+            console.warn("Skipping integration test because NOTIFICATIONS_TABLE is not set");
+            return;
+        }
+
         const event = {
             Records: [
                 {
                     body: JSON.stringify({
-                        userId: "integration-123",
-                        email: "integration@test.com",
-                        fullName: "Integration Test User",
-                        createdAt: new Date().toISOString()
+                        "detail-type": "user.created",
+                        source: "user.service",
+                        detail: {
+                            userId: "integration-123",
+                            email: "integration@test.com",
+                            fullName: "Integration Test User",
+                            createdAt: new Date().toISOString()
+                        }
                     })
                 }
             ]

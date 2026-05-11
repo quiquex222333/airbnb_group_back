@@ -173,10 +173,24 @@ describe("Booking Service Handler Unit Tests", () => {
             });
         });
 
+        it("should return 401 if user is not authenticated", async () => {
+            const event = {
+                pathParameters: { bookingId: "existing-id" },
+                requestContext: {},
+            } as unknown as APIGatewayProxyEventV2;
+
+            const response = await getBookingById(event) as any;
+
+            expect(response.statusCode).toBe(401);
+            expect(JSON.parse(response.body)).toEqual({
+                error: { code: "UNAUTHORIZED", message: "User not authenticated" },
+            });
+        });
+
         it("should return 404 if booking is not found", async () => {
             const event = {
                 pathParameters: { bookingId: "non-existent-id" },
-                requestContext: {                           
+                requestContext: {
                     authorizer: {
                         claims: { sub: "user-123" },
                     },
@@ -193,10 +207,37 @@ describe("Booking Service Handler Unit Tests", () => {
             });
         });
 
-        it("should return 200 and the booking if found", async () => {
+        it("should return 403 if user is not allowed to access the booking", async () => {
             const event = {
                 pathParameters: { bookingId: "existing-id" },
-                requestContext: {                           
+                requestContext: {
+                    authorizer: {
+                        claims: { sub: "user-456" }, // Different user
+                    },
+                },
+            } as unknown as APIGatewayProxyEventV2;
+
+            const mockBooking = {
+                bookingId: "existing-id",
+                listingId: "listing-456",
+                guestId: "user-123", // Booking belongs to user-123
+                status: "pending",
+            };
+
+            mockDynamoSend.mockResolvedValueOnce({ Item: mockBooking });
+
+            const response = await getBookingById(event) as any;
+
+            expect(response.statusCode).toBe(403);
+            expect(JSON.parse(response.body)).toEqual({
+                error: { code: "FORBIDDEN", message: "You are not allowed to access this booking" },
+            });
+        });
+
+        it("should return 200 and the booking if found and authorized", async () => {
+            const event = {
+                pathParameters: { bookingId: "existing-id" },
+                requestContext: {
                     authorizer: {
                         claims: { sub: "user-123" },
                     },
@@ -223,7 +264,7 @@ describe("Booking Service Handler Unit Tests", () => {
         it("should return 500 if DynamoDB fails", async () => {
             const event = {
                 pathParameters: { bookingId: "existing-id" },
-                requestContext: {                           
+                requestContext: {
                     authorizer: {
                         claims: { sub: "user-123" },
                     },
