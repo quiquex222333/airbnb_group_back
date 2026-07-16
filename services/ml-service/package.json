@@ -1,0 +1,11 @@
+{
+  "name": "@airbnb-clone/ml-service",
+  "version": "1.0.0",
+  "main": "dist/handler.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.149"
+  }
+}
