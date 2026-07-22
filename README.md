@@ -6,6 +6,14 @@ Este repositorio **no contiene la infraestructura AWS**. La infraestructura se g
 
 - `../airbnb_group_infrastruture` (nombre actual de carpeta)
 
+## Repositorios relacionados
+
+- [Infraestructura y guia completa de ejecucion](https://github.com/quiquex222333/airbnb_group_infrastruture)
+- [Frontend React](https://github.com/quiquex222333/airbnb_group_front)
+- [Entrenamiento y artefactos MLOps](https://github.com/quiquex222333/protecto_modulo_15)
+
+Para que AWS CDK encuentre los handlers, clona este repositorio con el nombre local `airbnb_group_services`, como carpeta hermana de `airbnb_group_infrastruture` y `airbnb_group_front`.
+
 ## Qué contiene este repo
 
 - Microservicios Lambda en `services/*`:
@@ -14,6 +22,7 @@ Este repositorio **no contiene la infraestructura AWS**. La infraestructura se g
   - `booking-service`
   - `review-service`
   - `notification-service`
+  - `ml-service` (inferencia K-Means portable)
 - Contratos compartidos TypeScript en `shared/contracts`
 - Contratos Smithy en `contracts/smithy`
 - Backend BFF de autenticación (Express + Cognito) en `backend`
